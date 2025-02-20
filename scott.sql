@@ -1,7 +1,7 @@
 -- 2.17
 -- 테이블 정보 조회
 select * from tab;
-
+SELECT ALL JOB, DEPTNO FROM EMP;
 -- 테이블의 내부 컬럼 구조
 --desc dept;
 
@@ -52,7 +52,7 @@ select * from emp order by deptno asc, sal desc;
 select * from emp where empno = 7369;
 select * from emp where sal >= 3000;
 select * from emp where deptno = 30;
-
+SELECT * FROM EMP WHERE DEPTNO = 30 OR JOB = 'CLERK';
 -- 논리 연산자 and or
 select * from emp where sal >= 3000 and deptno = 20;
 select * from emp where sal >= 3000 or deptno = 20;
@@ -186,11 +186,11 @@ select * from emp where ename like '_L%';
 -- rpad()    : 패딩. 오른쪽 공백에 삽입
 -- lpad()    : 패딩. 왼쪽 공백에 삽입
 -- concat()  : 문자열 연결
-select upper(ename),lower(ename) from emp;
+select upper(ename),lower(ename), initcap(ename) from emp;
 
 -- 문자의 대소문자 구분 없이 조회하는 방식
 select * from emp where lower(ename) = 'ford';
-
+SELECT LENGTH('한글'), LENGTHB('한글') FROM DUAL;
 select ename,length(ename) from emp where length(ename) >= 5;
 
 -- 3번째 글자부터 2글자 / 3번째 글자부터 마지막까지 / 뒤에서 두번째 글자부터 마지막까지 
@@ -574,6 +574,7 @@ select deptno, job, avg(sal) from emp
 select deptno, job, avg(sal) from emp where sal <= 3000
     group by deptno, job having avg(sal) >= 2000
     order by deptno, job;
+
 -- 동작 순서
 -- select 5
 -- from 1
@@ -911,3 +912,208 @@ select d.deptno, d.dname, e1.empno, e1.ename, e1.mgr, e1.sal, e1.deptno, s.losal
 select d.deptno, d.dname, e1.empno, e1.ename, e1.mgr, e1.sal, e1.deptno, s.losal, s.hisal, s.grade, e2.empno as mgr_empno, e2.ename as mgr_ename
     from emp e1 right outer join dept d on (e1.deptno = d.deptno) left outer join salgrade s on (e1.sal between s.losal and s.hisal)
     left outer join emp e2 on (e1.mgr = e2.empno) order by d.deptno, e1.empno;
+------------------------------------------------------------------------------
+-- 급여를 가장 많이 받는 사원의 이름과 금액 조회
+select ename, max(sal) from emp;
+
+select max(sal) from emp;
+select ename, sal from emp where sal >= 5000;
+
+-- 서브쿼리 사용
+select ename, sal from emp where sal >= (select max(sal) from emp);
+
+-- 해당 부서별 평균 급여 보다 해당 부서의 급여가 높은 사람
+select deptno, avg(sal) from emp group by deptno;
+
+-- 서브쿼리 사용
+select deptno, sal from emp where sal > (select avg(sal) from emp) order by deptno;
+
+-- 서브쿼리 sub query
+-- 하나의 Query Select  구문을 여러번 정의하는 것
+-- SQL문을 실행하는 데 필요한 데이터를 추가로 조회하기 위해 SQL문 내부에서 사용하는 select문
+-- 대부분의 서브쿼리에서는 order by절을 사용할 수 없다
+-- 스칼라 서브쿼리 : select절에서 사용
+-- 인라인 뷰      : form절에서 사용 
+-- 중첩 서브쿼리   : where절, having절에서 사용
+
+-- 결과의 개수
+-- 단일행 서브쿼리 < > = != <= >=
+-- 다중행 서브쿼리 in any some all exists
+-- 다중열 서브쿼리
+
+-- 동작 방식
+-- 비연관 서브쿼리
+-- 연관 서브쿼리
+
+
+-- 사원 이름이 JONES인 사원의 급여 출력하기
+select sal from emp where ename = 'JONES';
+-- 급여가 2975 보다 높은 사원 정보 출력하기
+select * from emp where sal > 2975;
+-- 서브쿼리로 JONES의 급여보다 높은 급여를 받는 사원 정보 출력하기
+select * from emp where sal > (select sal from emp where ename = 'JONES');
+
+
+--- 비연관 서브쿼리 ---
+
+-- 결과의 개수에 따라
+-- 단일행 서브쿼리
+-- 단일행 서브쿼리는 서브쿼리 결과값이 날자 자료형일 때도 사용할 수 있다.
+-- 특정 함수를 사용한 겱과값이 하나일 때 사용
+
+-- 서브쿼리의 결과 값이 날짜형인 경우
+select * from emp where hiredate < (select hiredate from emp where ename = 'SCOTT');
+
+-- 서브쿼리 안에서 함수를 사용한 경우 (조인과 서브쿼리를 함께 사용)
+select e.empno, e.ename, e.job, e.sal, d.deptno, d.dname, d.loc from emp e, dept d
+    where e.deptno = d.deptno and e.deptno = 20 and e.sal > (select avg(sal) from emp);
+
+select empno, ename, job, sal, dname, loc
+    from emp e inner join dept d on e.deptno = d.deptno
+    where e.deptno = 20 and sal > (select avg(sal) from emp);
+    
+-- 다중행 서브쿼리
+-- 실행 결과 행이 여러개로 나오는 서브쿼리
+-- 결과가 여러 개이므로 다중행 연산자를 사용해야 한다.
+
+-- 다중행 연산자
+-- in        : 메인쿼리의 데이터가 서브쿼리의 결과 중 하나라도 일치한 데이터가 있다면 true
+-- any, some : 메인쿼리의 조건식을 만족하는 서브쿼리의 결과가 하나 이상이면 true
+-- all       : 메인쿼리의 조건식을 서브쿼리의 결과 모두가 만족하면 true
+-- exists    : 서브쿼리의 결과가 존재하면 (행이 1개 이상일 경우) true
+
+-- in 연산자 사용하기
+select * from emp where deptno in (20, 30);
+
+-- 각 부서별 최고 급여와 동일한 급여를 받는 사원 정보 출력하기
+select * from emp where sal in (select max(sal) from emp group by deptno);
+
+-- any 연산자 사용하기
+select * from emp where sal = any (select max(sal) from emp group by deptno);
+
+-- some 연산자 사용하기
+select * from emp where sal = some (select max(sal) from emp group by deptno);
+
+-- 30번 부서 사원들의 최대 급여보다 적은 급여를 받는 사원 정보 출력하기
+-- max(sal) 없이 부등기호의 조건에 맞는 행이 전부 출력된다
+select * from emp where sal < any (select sal from emp where deptno = 30) order by sal, empno;
+-- 30번 부서 사원들의 최소 급여보다 많은 급여를 받는 사원 정보 출력하기
+select * from emp where sal > any (select sal from emp where deptno = 30) order by sal, empno;
+
+-- all 연산자 사용하기
+-- 부서 번호가 30번인 사원들의 최소 급여보다 더 적은 급여를 받는 사원 출력하기
+-- 서브쿼리의 모든 결과값보다 작은 값을 가진 메인쿼리의 행만 출력된다
+select * from emp where sal < all (select sal from emp where deptno = 30);
+-- 부서 번호가 30번인 사원들의 최대 급여보다 더 많은 급여를 받는 사원 출력하기
+select * from emp where sal > all (select sal from emp where deptno = 30);
+
+-- exists 연산자
+-- 서브쿼리에 결과값이 하나 이상 존재하면 true
+
+-- 서브쿼리 결과값이 존재하는 경우
+select * from emp where exists (select dname from dept where deptno = 10);
+-- 서브쿼리 결과값이 존재하지 않는 경우
+select * from emp where exists (select dname from dept where deptno = 50);
+
+-- 다중열 서브쿼리 (복수열 서브쿼리)
+-- select절에 비교할 데이터를 여러 개 지정하는 방식
+-- 메인쿼리에 비교할 열을 괄호로 묶어 명시하고 서브쿼리에서 괄호로 묶은 데이터와 같은 자료형 데이터를 select 절에 명시
+
+-- 다중열 서브쿼리 사용하기
+select * from emp where (deptno, sal) in (select deptno, max(sal) from emp group by deptno);
+
+-- 인라인 뷰
+-- 특정 테이블 전체 데이터가 아닌 select문을 통해 일부 데이터를 먼저 추출해 온 후 별칭을 주어 사용
+select e10.empno, e10.ename, e10.deptno, d.dname, d.loc
+    from (select * from emp where deptno = 10) e10, (select * from dept) d
+    where e10.deptno = d.deptno;
+    
+-- with 절
+-- 메인쿼리가 될 select문 안에서 사용할 서브쿼리와 별칭을 먼저 지정한 후 메인쿼리에서 사용
+with e10 as (select * from emp where deptno = 10), d as (select * from dept)
+    select e10.empno, e10.ename, e10.deptno, d.dname, d.loc
+    from e10, d where e10.deptno = d.deptno;
+    
+-- 스칼라 서브쿼리
+-- select절에 하나의 열 영역으로서 결과를 출력할 수 있다.
+-- select절에 명시하는 서브쿼리는 반드시 하나의 결과만 반환하도록 작성해야한다.
+
+-- select절에 서브쿼리 사용하기
+select empno, ename, job, sal, (select grade from salgrade where e.sal between losal and hisal) as salgrade,
+    deptno, (select dname from dept where e.deptno = dept.deptno) as dname from emp e;
+
+
+--- 연관 서브쿼리 ---
+
+-- 책 262p 실습 문제
+-- 전체 사원 중 ALLEN과 같은 직책인 사원들의 사원 정보, 부서 정보를 출력하라
+select job, empno, ename, sal, deptno, dname from emp join dept
+    using (deptno) where job = all (select job from emp where ename = 'ALLEN');
+
+-- 전체 사원의 평균 급여보다 높은 급여를 받는 사원들의 사원 정보, 부서 정보, 급여 등급 정보를 출력하라 (급여가 많은 순, 사원 번호 오름차순)
+select empno, ename, dname, hiredate, loc, sal, (select grade from salgrade where sal between losal and hisal) as salgrade
+    from emp join dept using (deptno) where sal > any (select avg(sal) from emp) order by sal desc, empno;
+
+-- 10번 부서에 근무하는 사원 중 30번 부서에는 존재하지 않는 직책을 가진 사원들의 사원 정보, 부서 정보를 출력하라
+select empno, ename, job, deptno, dname, loc from emp join dept using (deptno)
+    where deptno = 10 and job != all (select job from emp where deptno = 30);
+
+-- 직책이 SALESMAN인 사원들의 최고 급여보다 높은 급여를 받는 사원들의 사원 정보, 급여 등급 정보를 출력하라 (다중행 함수를 사용하는 방법과 사용하지 않는 방법, 사원 번호 오름차순)
+-- 다중행 함수 미사용
+select empno, ename, sal, (select grade from salgrade where sal between losal and hisal) as salgrade
+    from emp where sal > all (select sal from emp where job = 'SALESMAN') order by empno;
+
+-- 다중행 함수 사용
+select empno, ename, sal, (select grade from salgrade where sal between losal and hisal) as salgrade
+    from emp where sal > any (select max(sal) from emp where job = 'SALESMAN') order by empno;
+
+----------------------------
+-- 테이블 생성
+CREATE TABLE DEPT_COPY AS SELECT * FROM DEPT;
+
+-- 테이블 삭제
+-- DROP TABLE DEPT_COPY;
+
+-- 테이블에 데이터 추가하기
+-- INSERT
+-- INSERT INTO [열1, 열2,... 열N] VALUES (열1에 들어갈 데이터, 열2에 들어갈 데이터...열N에 들어갈 데이터);
+-- 지정한 열 개수와 각 열에 입력할 데이터 개수가 일치하지 않거나 자료형이 맞지 않는 경우 또는 열 길이를 초과하는 데이터를 지정하는 경우 에러
+INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (50, 'DATABASE', 'SEOUL');
+
+SELECT * FROM DEPT_COPY;
+
+-- INSERT문에 열 지정 없이 데이터 추가하기
+INSERT INTO DEPT_COPY VALUES(60, 'NETWORK', 'BUSAN');
+
+-- NULL 데이터 입력하기
+INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (70, 'WEB', NULL);
+-- 빈 공백 문자열로 NULL 입력하기
+INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (80, 'MOBILE', ' ');
+-- 열 데이터를 넣지 않는 방식으로 NULL 데이터 입력하기
+INSERT INTO DEPT_COPY (DEPTNO, LOC) VALUES (90, 'INCHEON');
+
+-- 날짜 데이터 입력하기
+CREATE TABLE EMP_COPY AS SELECT * FROM EMP WHERE 1 <> 1;
+DROP TABLE EMP_COPY;
+SELECT * FROM EMP_COPY;
+
+-- 날짜 사이에 / 입력
+INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+        VALUES (9999, 'HONG', 'PRESIDENT', NULL, '2001/01/01', 5000, 1000, 10);
+-- 날짜 사이에 - 입력
+INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+        VALUES (1111, 'SUNG', 'MANAGER', 9999, '2001-01-05', 4000, NULL, 20);
+
+-- TO_DATE 함수를 사용하여 날짜 데이터 입력하기
+INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+        VALUES (2111, 'LEE', 'MANAGER', 9999, TO_DATE('07/01/2001', 'DD/MM/YYYY'), 4000, NULL, 20);
+-- SYSDATE를 사용하여 날짜 데이터 입력하기
+INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+        VALUES (3111, 'SIM', 'MANAGER', 9999, SYSDATE, 4000, NULL, 30);
+        
+-- 서브쿼리로 여러 데이터 추가하기
+INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+        SELECT E.EMPNO, E.ENAME, E.JOB, E.MGR, E.HIREDATE, E.SAL, E.COMM, E.DEPTNO
+        FROM EMP E, SALGRADE S
+        WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL AND S.GRADE = 1;
+        
