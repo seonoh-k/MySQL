@@ -223,20 +223,20 @@ select ename || '는 ' || job || '입니다' as 직업정보 from emp;
 -- floor()  : 강제 버리기
 -- mod()    : 나머지 구하기
 
-select round(1234.5678),
-        round(1234.5678, 0),  -- 소수점 첫째자리 반올림
-        round(1234.5678, 1),  -- 자연수 첫째자리 반올림
-        round(1234.5678, 2),  -- 자연수 둘째자리 반올림
-        round(1234.5678, -1), -- 소수점 둘째자리 반올림
-        round(1234.5678, -2)  -- 소수점 셋째자리 반올림
+select round(1234.5678) AS ROUND,
+        round(1234.5678, 0) AS ROUND_0,       -- 소수점 첫째자리 반올림
+        round(1234.5678, 1) AS ROUND_1,       -- 자연수 첫째자리 반올림
+        round(1234.5678, 2) AS ROUND_2,       -- 자연수 둘째자리 반올림
+        round(1234.5678, -1) AS ROUND_MINUS1, -- 소수점 둘째자리 반올림
+        round(1234.5678, -2) AS ROUND_MINUS2  -- 소수점 셋째자리 반올림
     from dual;
 
-select trunc(1234.5678),
-        trunc(1234.5678, 0),  -- 소수점 첫째자리 이후 버림
-        trunc(1234.5678, 1),  -- 소수점 둘째자리 이후 버림
-        trunc(1234.5678, 2),  -- 소수점 셋째자리 이후 버림
-        trunc(1234.5678, -1), -- 자연수 첫째자리 이후 버림
-        trunc(1234.5678, -2)  -- 자연수 둘째자리 이후 버림
+select trunc(1234.5678) AS TRUNC,
+        trunc(1234.5678, 0) AS TRUNC_0,       -- 소수점 첫째자리 이후 버림
+        trunc(1234.5678, 1) AS TRUNC_1,       -- 소수점 둘째자리 이후 버림
+        trunc(1234.5678, 2) AS TRUNC_2,       -- 소수점 셋째자리 이후 버림
+        trunc(1234.5678, -1) AS TRUNC_MINUS1, -- 자연수 첫째자리 이후 버림
+        trunc(1234.5678, -2) AS TRUNC_MINUS2  -- 자연수 둘째자리 이후 버림
     from dual;
 
 select ceil(3.14),   -- 3.14 보다 큰 정수 중 가장 작은 정수
@@ -294,7 +294,7 @@ select sysdate,
         round(sysdate, 'ddd') as ddd,   -- 해당 일의 정오를 기준으로 사용
         round(sysdate, 'hh') as hh      -- 해당 일의 시간을 기준으로 사용
     from dual;
-    
+
 select sysdate,
         trunc(sysdate, 'cc') as cc,
         trunc(sysdate, 'yyyy') as yyyy,
@@ -318,7 +318,7 @@ select * from emp where months_between(sysdate, hiredate) < 480;
 
 -- 숫자로 입력된 문자 데이터가 자동으로 숫자로 형 변환 된다. 그 외에는 자동 형 변환이 어려움
 select empno, ename, empno + '500' from emp where ename = 'SCOTT'; 
-select 'ABCD' + empno, empno from emp where ename = 'SCORR'; -- 자동 형 변환되지 않음. error
+select 'ABCD' + empno, empno from emp where ename = 'SCOTT'; -- 자동 형 변환되지 않음. error
 
 select sysdate, to_char(sysdate,'yyyy-mm-dd hh24:mm:ss') as 현재날짜시각 from dual;
 
@@ -1067,53 +1067,7 @@ select empno, ename, sal, (select grade from salgrade where sal between losal an
 select empno, ename, sal, (select grade from salgrade where sal between losal and hisal) as salgrade
     from emp where sal > any (select max(sal) from emp where job = 'SALESMAN') order by empno;
 
-----------------------------
--- 테이블 생성
-CREATE TABLE DEPT_COPY AS SELECT * FROM DEPT;
-
--- 테이블 삭제
--- DROP TABLE DEPT_COPY;
-
--- 테이블에 데이터 추가하기
--- INSERT
--- INSERT INTO [열1, 열2,... 열N] VALUES (열1에 들어갈 데이터, 열2에 들어갈 데이터...열N에 들어갈 데이터);
--- 지정한 열 개수와 각 열에 입력할 데이터 개수가 일치하지 않거나 자료형이 맞지 않는 경우 또는 열 길이를 초과하는 데이터를 지정하는 경우 에러
-INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (50, 'DATABASE', 'SEOUL');
-
-SELECT * FROM DEPT_COPY;
-
--- INSERT문에 열 지정 없이 데이터 추가하기
-INSERT INTO DEPT_COPY VALUES(60, 'NETWORK', 'BUSAN');
-
--- NULL 데이터 입력하기
-INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (70, 'WEB', NULL);
--- 빈 공백 문자열로 NULL 입력하기
-INSERT INTO DEPT_COPY (DEPTNO, DNAME, LOC) VALUES (80, 'MOBILE', ' ');
--- 열 데이터를 넣지 않는 방식으로 NULL 데이터 입력하기
-INSERT INTO DEPT_COPY (DEPTNO, LOC) VALUES (90, 'INCHEON');
-
--- 날짜 데이터 입력하기
-CREATE TABLE EMP_COPY AS SELECT * FROM EMP WHERE 1 <> 1;
-DROP TABLE EMP_COPY;
-SELECT * FROM EMP_COPY;
-
--- 날짜 사이에 / 입력
-INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
-        VALUES (9999, 'HONG', 'PRESIDENT', NULL, '2001/01/01', 5000, 1000, 10);
--- 날짜 사이에 - 입력
-INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
-        VALUES (1111, 'SUNG', 'MANAGER', 9999, '2001-01-05', 4000, NULL, 20);
-
--- TO_DATE 함수를 사용하여 날짜 데이터 입력하기
-INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
-        VALUES (2111, 'LEE', 'MANAGER', 9999, TO_DATE('07/01/2001', 'DD/MM/YYYY'), 4000, NULL, 20);
--- SYSDATE를 사용하여 날짜 데이터 입력하기
-INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
-        VALUES (3111, 'SIM', 'MANAGER', 9999, SYSDATE, 4000, NULL, 30);
-        
--- 서브쿼리로 여러 데이터 추가하기
-INSERT INTO EMP_COPY (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
-        SELECT E.EMPNO, E.ENAME, E.JOB, E.MGR, E.HIREDATE, E.SAL, E.COMM, E.DEPTNO
-        FROM EMP E, SALGRADE S
-        WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL AND S.GRADE = 1;
-        
+SELECT INSTR('HELLO, ORACLE!', 'L') AS INSTR_1,
+				INSTR('HELLO, ORACLE!', 'L', 5) AS INSTR_2,
+				INSTR('HELLO, ORACLE!', 'L', 2, 2) AS INSTR_3
+			FROM DUAL;
