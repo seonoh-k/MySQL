@@ -716,14 +716,14 @@ select * from(select deptno,
 -- 책 212p 실습 문제
 
 -- 부서 번호, 평균 급여, 최고 급여, 최저 급여, 사원수를 출력하라. 단 평균 급여를 출력할 때 소수점을 제외하고 각 부서 별로 출력하라
-select deptno, trunc(avg(sal), 0) as avg_sal, max(sal) as max_sal, min(sal) as min_sal, count(*)
+select deptno, trunc(avg(sal), 0) as avg_sal, max(sal) as max_sal, min(sal) as min_sal, count(*) AS CNT
     from emp group by deptno;
     
 -- 같은 직책에 종사하는 사원이 3명 이상인 직책과 인원수를 출력하라
 select job, count(*) from emp group by job having count(*) >= 3;
 
 -- 사원들의 입사 연도를 기준으로 부서별로 몇명이 입사했는지 출력하라
-select to_char(hiredate, 'yyyy') as hire_year, deptno, count(*) from emp
+select to_char(hiredate, 'yyyy') as hire_year, deptno, count(*) AS CNT from emp
     group by to_char(hiredate, 'yyyy'), deptno;
     
 -- 추가 수당을 받는 사원 수와 받지 못하는 사원 수를 출력하라

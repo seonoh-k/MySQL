@@ -339,3 +339,584 @@ INSERT INTO EMP_HW (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO, REMARK)
 
 -- EMP_HW 테이블 삭제
 DROP TABLE EMP_HW;
+
+---- 객체 종류 ----
+-- 데이터 사전
+-- 데이터베이스 메몰, 성능, 사용자, 권한, 객체 등 오라클 데이터베이스에 중요한 데이터를 보관
+-- 데이터 사전 뷰
+-- USER_XXXX : 현재 데이터베이스에 접속한 사용자가 소유한 객체 정보
+-- ALL_XXXX  : 현재 데이터베이스에서 사용 가능한 모든 객체 정보
+-- DBA_XXXX  : 데이터베이스 관리를 위한 정보 (SYSTEM, SYS 사용자만 열람 가능)
+-- V$_XXXX   : 데이터베이스 성능 관련 정보(V$_XXXX 테이블의 뷰)
+
+-- SCOTT 계정에서 사용 가능한 데이터 사전 살펴보기
+SELECT * FROM DICT;
+SELECT * FROM DICTIONARY;
+
+-- USE_ 접두어를 가진 데이터 사전
+-- SCOTT 계정이 가지고 있는 객체 정보
+SELECT TABLE_NAME FROM USER_TABLES;
+
+-- ALL_ 접두어를 가진 데이터 사전
+-- SCOTT 계정이 사용할 수 있는 객체 정보
+SELECT OWNER, TABLE_NAME FROM ALL_TABLES;
+
+-- DBA_ 접두어를 가진 데이터 사전
+-- 데이터베이스 관리 권한을 가진 사용자만 조회할 수 있다.
+SELECT * FROM DBA_TABLES; -- 에러. SYSTEM 계정으로 접속하면 가능
+
+-- DBA_USER로 사용자 정보 살펴보기
+SELECT * FROM DBA_USERS WHERE USERNAME = 'SCOTT';
+
+--- 인덱스
+-- 데이터 검색 성능 향상을 위해 테이블 열에 사용하는 객체
+-- TABLE FULL SCAN : 테이블 데이터를 처음부터 끝까지 검색
+-- INDEX SCAN      : 인덱스를 통해 검색
+
+-- SCOTT 계정이 소유한 인덱스 정보 알아보기
+SELECT * FROM USER_INDEXES;
+
+-- SCOTT 계정이 소유한 인덱스 컬럼 정보 알아보기
+SELECT * FROM USER_IND_COLUMNS;
+
+-- 인덱스 생성
+-- CREATE INDEX 인덱스 이름 ON 테이블 이름 (열 이름1 ASC OR DESC, 열 이름2 ASC OR DESC..);
+
+-- EMP 테이블의 SAL 열에 인덱스 생성하기
+CREATE INDEX IDX_EMP_SAL ON EMP (SAL);
+
+-- 생성한 인덱스 살펴보기
+SELECT * FROM USER_IND_COLUMNS;
+
+-- 인덱스 삭제
+DROP INDEX IDX_EMP_SAL;
+
+--- 뷰
+-- 가상 테이블
+-- 하나 이상의 테이블을 조회하는 SELECT문을 저장한 객체
+-- 편리성, 보안성이 보장됨
+
+-- 뷰 생성
+-- CREATE [OR REPLACE] [FORCE | NOFORCE] VIEW 뷰 이름 (열1 이름, 열2 이름...)
+-- AS (저장할 SELECT문)
+-- [WITH CHECK OPTION [CONSTRAINT 제약조건]]
+-- [WITH READ ONLY [CONSTRAINT 제약조건]]
+
+-- 뷰 생성하기
+CREATE VIEW VW_EMP20
+    AS (SELECT EMPNO, ENAME, JOB, DEPTNO FROM EMP
+    WHERE DEPTNO = 20);
+-- 뷰 확인하기
+SELECT * FROM USER_VIEWS;
+-- 뷰 조회하기
+SELECT * FROM VW_EMP20;
+-- 뷰 삭제
+DROP VIEW VW_EMP20;
+
+-- 인라인 뷰를 사용한 TOP-N SQL문
+-- 인라인 뷰 : SQL문에서 일회성으로 만들어서 사용하는 뷰 (서브쿼리, WITH절에서 사용한 SELECT문)
+
+-- ROWNUM 추가 조회
+-- 의사 열 : 테이블에 존재하지 않지만 특정 목적을 위해 테이블에 저장되어있는 열처럼 사용 가능한 열
+-- ROWNUM : 의사 열, 행이 조회된 순서대로 매겨진 일련번호
+SELECT ROWNUM, E.* FROM EMP E;
+SELECT ROWNUM, E.* FROM EMP E ORDER BY SAL DESC;
+
+-- 인라인 뷰 (서브쿼리)
+SELECT ROWNUM, E.*
+    FROM (SELECT * FROM EMP E ORDER BY SAL DESC) E;
+-- WITH절 사용
+WITH E AS (SELECT * FROM EMP ORDER BY SAL DESC)
+SELECT ROWNUM, E.* FROM E;
+
+-- 인라인 뷰로 TOP-N 추출하기 (서브쿼리)
+SELECT ROWNUM, E.*
+    FROM (SELECT * FROM EMP E ORDER BY SAL DESC) E
+    WHERE ROWNUM <= 3;
+    
+-- WITH절 사용
+WITH E AS (SELECT * FROM EMP E ORDER BY SAL DESC)
+SELECT ROWNUM, E.* FROM E WHERE ROWNUM <= 3;
+
+--- 시퀀스
+-- 특정 규칙에 맞는 연속 숫자를 생성하는 객체
+
+-- 시퀀스 생성
+-- CREATE SEQUENCE 시퀀스 이름
+-- [INCREMENT BY N]
+-- [START WITH N]
+-- [MAXVALUE N | NOMAXVALUE]
+-- [MINVALUE N | NOMINVALUE]
+-- [CYCLE | NOCYCLE]
+-- [CACHE N | NOCACHE]
+
+-- DEPT_SEQUENCE 테이블 생성
+CREATE TABLE DEPT_SEQUENCE
+    AS SELECT * FROM DEPT WHERE 1 <> 1;
+    
+SELECT * FROM DEPT_SEQUENCE;
+
+-- 시퀀스 생성하기
+CREATE SEQUENCE SEQ_DEPT_SEQUENCE
+    INCREMENT BY 10
+    START WITH 10
+    MAXVALUE 90
+    MINVALUE 0
+    NOCYCLE
+    CACHE 2;
+    
+-- 생성한 시퀀스 확인
+SELECT * FROM USER_SEQUENCES;
+
+-- 시퀀스 사용
+-- CURRVAL : 마지막으로 생성한 번호 반환
+-- NEXTVAL : 다음 번호 생성
+
+-- MAXVALUE 이상 생성 불가능
+INSERT INTO DEPT_SEQUENCE (DEPTNO, DNAME, LOC)
+    VALUES (SEQ_DEPT_SEQUENCE.NEXTVAL, 'DATABASE', 'SEOUL');
+    
+SELECT SEQ_DEPT_SEQUENCE.CURRVAL FROM DUAL;
+
+-- 시퀀스 수정
+-- ALTER SEQUENCE 시퀀스 이름
+ALTER SEQUENCE SEQ_DEPT_SEQUENCE
+    INCREMENT BY 3
+    MAXVALUE 99
+    CYCLE;
+-- MAXVALUE를 넘어서면 CYCLE 허용으로 0부터 다시 시작
+
+-- 시퀀스 삭제
+DROP SEQUENCE SEQ_DEPT_SEQUENCE;
+    
+--- 동의어
+-- 테이블, 뷰, 시퀀스 등 객체 이름 대신 사용할 수 있는 다른 이름을 부여하는 객체. 일회성이 아님
+-- CREATE [PUBLIC] SYNONYM 동의어 이름
+-- FOR [사용자.][객체이름];
+
+-- 동의어 생성
+CREATE SYNONYM E FOR EMP;
+
+SELECT * FROM E;
+
+-- 동의어 삭제
+DROP SYNONYM E;
+
+-- 책 357P 실습 문제
+-- 다음 SQL문 작성
+-- EMP 테이블과 같은 구조의 데이터를 저장하는 EMPIDX 테이블 생성
+-- 생성한 EMPIDX 테이블의 EMPNO 열에 IDX_EMPIDX_EMPNO 인덱스 생성
+-- 데이터 사전 뷰로 생성한 인덱스 확인
+CREATE TABLE EMPIDX AS SELECT * FROM EMP;
+
+CREATE INDEX IDX_EMPIDX_EMPNO ON EMPIDX (EMPNO);
+
+SELECT * FROM USER_IND_COLUMNS WHERE TABLE_NAME = 'EMPIDX';
+
+-- 위에서 생성한 EMPIDX 테이블의 데이터 중 급여가 1500초과인 사원만 출력하는 EMPODX_OVER15K 뷰 생성
+-- 사원 번호, 사원 이름, 직책, 부서 번호, 급여, 추가수당 열
+-- 추가 수당이 존재하면 O, 존재하지 않으면 X
+CREATE VIEW EMPIDX_OVER15K
+    AS (SELECT EMPNO, ENAME, JOB, DEPTNO, SAL, NVL2(COMM, 'O', 'X') AS COMM FROM EMPIDX WHERE SAL > 1500);
+    
+SELECT * FROM EMPIDX_OVER15K;
+
+--다음 SQL문 작성
+-- DEPT 테이블과 같은 구조의 데이터를 저장하는 DEPTSEQ 생성
+-- 생성한 DEPTSEQ 테이블의 DEPTNO 열에 사용할 시퀀스 작성
+-- DEPTSEQ를 사용하여 부서 추가
+CREATE TABLE DEPTSEQ AS SELECT * FROM DEPT;
+
+CREATE SEQUENCE DEPT_SEQ
+    INCREMENT BY 1
+    START WITH 1
+    MAXVALUE 99
+    MINVALUE 1
+    NOCYCLE
+    NOCACHE;
+    
+INSERT INTO DEPTSEQ (DEPTNO, DNAME, LOC)
+    VALUES (DEPT_SEQ.NEXTVAL, 'DATABASE', 'SEOUL');
+INSERT INTO DEPTSEQ (DEPTNO, DNAME, LOC)
+    VALUES (DEPT_SEQ.NEXTVAL, 'WEB', 'BUSAN');
+INSERT INTO DEPTSEQ (DEPTNO, DNAME, LOC)
+    VALUES (DEPT_SEQ.NEXTVAL, 'MOBILE', 'ILSAN');
+
+SELECT * FROM DEPTSEQ;
+
+-- 제약 조건
+-- 컬럼에서 사용가능한 데이터를 제한한다. (무결성)
+-- 컬럽은 기본적으로 모두 NULL이어야 한다
+-- NOT NULL : 반드시 값이 있어야 한다
+-- UNIQUE : 유일한 값이어야 한다
+-- PRIMARY KEY (NOT NULL + UNIQUE) : 기본키 
+-- FOREIGN KEY : 참조키(두개 테이블의 관계를 이용하는 것)
+-- CHECK : 조건식으로 값의 범위를 제약한다
+-- DEFAULT : 기본값 설정하기
+
+
+CREATE TABLE DEPT_TEMP4(
+    DEPTNO NUMBER(2) NOT NULL,
+    DNAME VARCHAR2(10) NOT NULL,
+    LOC VARCHAR2(10) NOT NULL
+);
+
+DESC USER_CONSTRAINTS;
+
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME FROM USER_CONSTRAINTS;
+
+
+-- NOT NULL
+-- NULL 입력을 허용하지 않음
+-- 테이블 생성 시 제약 조건 지정
+CREATE TABLE TABLE_NOTNULL(
+    LOGIN_ID VARCHAR2(20) NOT NULL,
+    LOGIN_PWD VARCHAR2(20) NOT NULL,
+    TEL VARCHAR2(20)
+);
+
+DESC TABLE_NOTNULL;
+
+-- 제약 조건이 NOT NULL인 열에 NULL값 넣기 -> ERROR
+INSERT INTO TABLE_NOTNULL (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES ('TEST_ID_01', NULL, '010-1234-1234');
+
+-- 제약 조건이 없는 열에 NULL값 넣기
+INSERT INTO TABLE_NOTNULL (LOGIN_ID, LOGIN_PWD)
+VALUES ('TEST_ID_01', '1234');
+
+SELECT * FROM TABLE_NOTNULL;
+
+-- 제약 조건이 NOT NULL인 열 데이터를 NULL 값으로 업데이트 -> ERROR
+UPDATE TABLE_NOTNULL
+    SET LOGIN_PWD = NULL
+WHERE LOGIN_ID = 'TEST_ID_01';
+
+-- 제약 조건 확인
+-- USER.CONSTRAINTS 데이터 사전 활용
+-- OWNER          : 제약 조건 소유 계정
+-- CONSTRAINT_NAME : 제약 조건 이름
+-- CONSTRAINT_TYPE : 제약 조건 종류
+-- C : NOT NULL, CHEK
+-- P : PRIMARY KEY
+-- U : UNIQUE
+-- R : FOREIGN KEY
+-- TABLE_NAME     : 제약 조건을 지정한 테이블 이름
+
+-- 제약 조건 살펴보기
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME FROM USER_CONSTRAINTS;
+
+-- 제약 조건 이름 지정
+CREATE TABLE TABLE_NOTNULL2(
+    LOGIN_ID VARCHAR2(20) CONSTRAINT TBLNN2_LGNID_NN NOT NULL,
+    LOGIN_PWD VARCHAR2(20) CONSTRAINT TBLNN2_LGNPW_NN NOT NULL,
+    TEL VARCHAR2(20)
+);
+
+-- 이미 생성한 테이블에 제약 조건 지정
+-- 제약 조건 추가하기
+-- NOT NULL : ALTER, MODIFY 사용
+-- 이미 NULL 값이 입력되어 있어 변경 불가
+ALTER TABLE TABLE_NOTNULL MODIFY (TEL NOT NULL);
+
+UPDATE TABLE_NOTNULL
+    SET TEL = '010-1234-5678'
+    WHERE LOGIN_ID = 'TEST_ID_01';
+    
+-- 제약 조건에 이름 지정해서 추가하기
+ALTER TABLE TABLE_NOTNULL2
+MODIFY (TEL CONSTRAINT TBLNN_TEL_NN NOT NULL);
+
+DESC TABLE_NOTNULL2;
+
+-- 생성한 제약 조건의 이름 변경하기
+ALTER TABLE TABLE_NOTNULL2
+    RENAME CONSTRAINT TBLNN_TEL_NN TO TBLNN2_TEL_NN;
+    
+-- 제약 조건 삭제
+ALTER TABLE TABLE_NOTNULL2
+    DROP CONSTRAINT TBLNN2_TEL_NN;
+
+-- UNIQUE
+-- 저장할 데이터의 중복을 허용하지 않음
+-- 지정 방법은 NULL과 동일하다
+
+-- 제약 조건 지정
+CREATE TABLE TABLE_UNIQUE(
+    LOGIN_ID VARCHAR2(20) UNIQUE,
+    LOGIN_PWD VARCHAR2(20) NOT NULL,
+    TEL VARCHAR2(20)
+);
+
+-- 제약 조건 확인
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME FROM USER_CONSTRAINTS WHERE TABLE_NAME = 'TABLE_UNIQUE';
+
+-- 중복을 허락하지 않는 UNIQUE
+-- 두번 실행하면 에러
+INSERT INTO TABLE_UNIQUE (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('TEST_ID_01', 'PWD01', '010-1111-1234');
+
+SELECT * FROM TABLE_UNIQUE;
+
+-- 제약 조건이 UNIQUE가 아니면 중복 허용
+INSERT INTO TABLE_UNIQUE (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('TEST_ID_02', 'PWD01', '010-1111-1234');
+
+-- NULL값은 중복 허용
+INSERT INTO TABLE_UNIQUE (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES(NULL, 'PWD01', '010-1111-1234');
+
+-- 데이터 수정에서도 중복을 허용하지 않음
+UPDATE TABLE_UNIQUE SET LOGIN_ID = 'TEST_ID_01' WHERE LOGIN_ID IS NULL;
+
+-- PRIMARY KEY
+-- UNIQUE와 NOT NULL 제약의 특징을 모두 가지는 제약 조건
+-- NULL이 아닌 중복되지 않은 유일한 값을 가진다
+
+-- 제약 조건 지정하기
+CREATE TABLE TABLE_PK (
+    LOGIN_ID VARCHAR2(20) PRIMARY KEY,
+    LOGIN_PWD VARCHAR2(20) NOT NULL,
+    TEL VARCHAR2(20)
+);
+
+DESC TABLE_PK;
+
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME 
+    FROM USER_CONSTRAINTS WHERE TABLE_NAME LIKE 'TABLE_PK%';
+    
+-- 제약 조건을 지정한 열 확인
+-- 중복 데이터, NULL값 삽입 불가능
+INSERT INTO TABLE_PK (LOGIN_ID, LOGIN_PWD, TEL)
+    VALUES('TEST_ID_01', '1234', '010-1111-1234');
+    
+SELECT * FROM TABLE_PK;
+
+-- FOREIGN KEY
+-- 서로 다른 테이블 간 관계를 정의하는데 사용하는 제약 조건
+
+-- CONSTRAINT_TYPE이 R일 경우 FOREIGN KEY
+-- R_CONSTRAINT_NAME의 PK_DEPT는 DEPT 테이블의 PRIMARY KEY인 DEPTNO를 참조한다는 뜻
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, R_OWNER, R_CONSTRAINT_NAME
+    FROM USER_CONSTRAINTS WHERE TABLE_NAME IN ('EMP', 'DEPT');
+    
+-- FOREIGN KEY가 참조하는 열에 존재하지 않는 데이터 입력하기
+-- DEPT 테이블이 부모, EMP 테이블이 자식. 
+-- '부모 키가 없습니다' = DEPT 열에 50이 존재하지 않는다
+INSERT INTO EMP (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+    VALUES(9999, 'HONG', 'CLERK', '7788', TO_DATE('2017/04/30', 'YYYY/MM/DD'), 1200, NULL, 50);
+    
+-- 제약 조건 지정하기
+-- CREATE TABLE 테이블 이름(
+-- ... (다른 열 정의),
+-- 열 자료형 CONSTRAINT [제약 조건 이름 (선택)] REFERENCES 참조 테이블 (참조할 열));
+
+-- 열을 모두 정의한 후 제약 조건 지정
+-- CREATE TABLE 테이블 이름 (
+-- ... (다른 열 정의),
+-- CONSTRAINT [제약 조건 이름] FOREIGN KEY(열) REFERENCES 참조 테이블 (참조할 열));
+
+-- DPET_FK 테이블 생성
+CREATE TABLE DEPT_FK(
+    DEPTNO NUMBER(2) CONSTRAINT DEPTFK_DEPTNO_PK PRIMARY KEY,
+    DNAME VARCHAR2(14),
+    LOC VARCHAR2(13)
+);
+
+-- EMP_FK 테이블 생성
+CREATE TABLE EMP_FK(
+    EMPNO NUMBER(4) CONSTRAINT EMPFK_EMPNO_PK PRIMARY KEY,
+    ENAME VARCHAR2(10),
+    JOB VARCHAR2(9),
+    MGR NUMBER(4),
+    HIREDATE DATE,
+    SAL NUMBER (7, 2),
+    COMM NUMBER(7, 2),
+    DEPTNO NUMBER(2) CONSTRAINT EMPFK_DEPTNO_FK REFERENCES DEPT_FK (DEPTNO)
+);
+
+-- DEPT_FK 테이블에 데이터가 없기 때문에 EMP_FK에 데이터 삽입이 불가능
+-- EMP_FK의 DEPTNO가 DEPT_FK의 DEPTNO를 참조하기 때문
+
+-- DEPT_FK에 데이터 삽입
+INSERT INTO DEPT_FK
+    VALUES(10, 'TEST_DNAME', 'TEST_LOC');
+    
+SELECT * FROM DEPT_FK;
+
+INSERT INTO EMP_FK
+    VALUES(9999, 'TEST_NAME', 'TEST_JOB', NULL, TO_DATE('2001/01/01', 'YYYY/MM/DD'), 3000, NULL, 10);
+    
+SELECT * FROM EMP_FK;
+
+-- FOREIGN키로 참조 행 데이터 삭제
+-- 삭제하려는 데이터를 참조하는 데이터가 존재하기 때문에 삭제 불가능
+DELETE FROM DEPT_FK WHERE DEPTNO = 10;
+
+-- 열 데이터를 삭제할 때 이 데이터를 참조하고 있는 데이터도 함께 삭제
+-- 제약 조건 지정 시에 작성
+-- CONSTRAINT [제약 조건 이름] REFERENCES 참조 테이블(참조할 열) ON DELETE CASCADE
+
+-- 열 데이터를 삭제할 때 이 데이터를 참조하는 데이터를 NULL로 수정
+-- CONSTRAINT [제약 조건 이름] REFERENCES 참조 테이블(참조할 열) ON DELETE SET NULL
+
+-- CHECK
+-- 열에 저장할 수 있는 값의 범위 또는 패턴을 정의할 때 사용
+
+-- CHECK 제약 조건 설정하기
+CREATE TABLE TABLE_CHK(
+    LOGIN_ID VARCHAR2(20) CONSTRAINT TBLCK_LOGINID_PK PRIMARY KEY,
+    LOGIN_PWD VARCHAR2(20) CONSTRAINT TBLCK_LOGINPWD_CK CHECK (LENGTH(LOGIN_PWD) > 3),
+    TEL VARCHAR2(20)
+);
+
+DESC TABLE_CHK;
+
+-- CHECK 제약 조건에 맞지 않는 예
+-- LOGIN_PWD가 3자리 이상이어야함
+INSERT INTO TABLE_CHK
+    VALUES('TEST_ID', '123', '010-1111-1234');
+
+-- CHECK 제약 조건에 맞는 예    
+INSERT INTO TABLE_CHK
+    VALUES('TEST_ID', '1234', '010-1111-1234');
+    
+-- CHECK 제약 조건 확인하기
+SELECT OWNER, CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME
+    FROM USER_CONSTRAINTS WHERE TABLE_NAME LIKE 'TABLE_CHK%';
+    
+
+-- DEFAULT
+-- 제약 조건과 별개로 특정 열에 저장할 값이 지정되지 않았을 경우에 기본값을 지정
+
+-- 테이블 생성할 때 DEFAULT 제약 조건 설정하기
+CREATE TABLE TABLE_DEFAULT(
+    LOGIN_ID VARCHAR2(20) CONSTRAINT TBLCK2_LOGINID_PK PRIMARY KEY,
+    LOGIN_PWD VARCHAR2(20) DEFAULT '1234',
+    TEL VARCHAR2(20)
+);
+
+DESC TABLE_DEFAULT;
+
+-- DEFAULT로 지정한 기본값이 입력되는 INSERT문
+INSERT INTO TABLE_DEFAULT VALUES ('TEST_ID_01', NULL, '010-1111-1234');
+
+INSERT INTO TABLE_DEFAULT (LOGIN_ID, TEL) VALUES ('TEST_ID_02', '010-1111-1234');
+
+SELECT * FROM TABLE_DEFAULT;
+
+-- 제약 조건의 비활성화, 활성화
+-- DISABLE : 비활성화
+-- ENABLE  : 활성화
+
+-- ALTER TABLE 테이블 이름 DISABLE [NOVALIDATE / VALIDATE(선택)] CONSTRAINT 제약조건 이름;
+-- ALTER TABLE 테이블 이름 ENABLE [NOVALIDATE / VALIDATE(선택)] CONSTRAINT 제약 조건 이름;
+
+-- 제약 조건을 적용하는 2가지 방식
+-- 컬럼 레벨 방식
+-- 테이블 레벨 방식
+    -- 테이블 안에서 처리하는 방식. ALTER 명령어를 사용하는 방식
+    -- NOT NULL은 컬럼 레벨 방식만 가능
+    
+
+-- 책 394P 실습 문제
+CREATE TABLE DEPT_CONST(
+    DEPTNO NUMBER(2) CONSTRAINT DEPTCONST_DEPTNO_PK PRIMARY KEY,
+    DNAME VARCHAR2(14) CONSTRAINT DEPTCONST_DNAME_UNIQ UNIQUE,
+    LOC VARCHAR2(13) CONSTRAINT DEPTCONST_LOC_NN NOT NULL
+);
+
+CREATE TABLE EMP_CONST(
+    EMPNO NUMBER(4) CONSTRAINT EMPCONST_EMPNO_PK PRIMARY KEY,
+    ENAME VARCHAR2(10) CONSTRAINT EMPCONST_ENAME_NN NOT NULL,
+    JOB VARCHAR2(9),
+    TEL VARCHAR2(20) CONSTRAINT EMPCONST_TEL_UNQ UNIQUE,
+    HIREDATE DATE,
+    SAL NUMBER (7, 2) CONSTRAINT EMPCONST_SAL_CHK CHECK(LENGTH(SAL) BETWEEN 1000 AND 9999),
+    COMM NUMBER(7, 2),
+    DEPTNO NUMBER(2) CONSTRAINT EMPCONST_DEPTNO_FK REFERENCES DEPT_FK(DEPTNO)
+);
+
+SELECT TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE
+    FROM USER_CONSTRAINTS WHERE TABLE_NAME LIKE '%CONST' ORDER BY CONSTRAINT_NAME;
+    
+---- 사용자, 권한, 롤 관리 ----
+-- 사용자 생성
+-- CREATE USER 사용자 이름(필수)
+-- IDENTIFIED BY 패스워드(필수)
+-- DEFAULT TABLESPACE 테이블 스페이스 이름(선택)
+-- TEMPORARY TABLESPACE 테이블 스페이스(그룹) 이름(선택)
+-- QUOTA 테이블 스페이스 크기 ON 테이블 스페이스 이름(선택)
+-- PROFILE 프로파일 이름(선택)
+-- PASSWORD EXPIRE(선택)
+-- ACCOUNT [LOCK/UNLOCK] (선택)
+
+-- 권한 관리
+-- 시스템 권한 : 사용자 생성과 정보 수정 및 삭제, 데이터베이스 접근, 오라클 데이터베이스의 여러 자원과 객체 생성 관리 등의 권한
+-- 시세템 권한 부여 기본 문법
+-- GRANT [시스템 권한(필수)] TO [사용자 이름/롤(ROLE)이름/PUBLIC(필수)] [WITH ADMIN OPTION(선택)];
+-- RESOURCE : 롤 중 하나로, 여러 권한을 하나의 이름으로 묶어 권한 부여 관련 작업을 간편하게 해준다
+
+-- 시스템 권한 취소
+-- REVOKE [시스템 권한(필수)] FROM [사용자 이름/롤(ROLE)이름/PUBLIC(필수)];
+
+-- 객체 권한 : 특정 사용자가 생성한 테이블, 인덱스, 뷰, 시퀀스 등과 관련된 권한
+-- 객체 권한 부여
+-- GRANT [객체 권한/ALL PRIVILEGES(필수)] ON [스키마.객체 이름(필수)] TO [사용자 이름/롤(ROLE)이름/PUBLIC(필수)] [WITH GRANT OPTION(선택)];
+
+-- 객체 권한 취소
+-- REVOKE [객체 권한/ALL PRIVILEGES(필수)] ON [스키마.객체 이름(필수)]FROM [사용자 이름/롤(ROLE)이름/PUBLIC(필수)] [CASCADE CONSTRAINTS/FORCE(선택)];
+
+-- 롤 ROLE
+-- 여러 종류의 권한을 묶어놓은 그룹
+-- 사전 정의된 롤
+-- 오라클 데이터베이스에서 제공
+-- CONNECT 롤  : CREATE SESSION
+-- RESOURCE 롤 : CREATE TRIGGER, SEQUENCE, TYPE, PRODUCE, CLUSTER, OPERATOR, INDEXTYPE, TABLE
+-- DBA 롤      : 데이터베이스를 관리하는 시스템 권한 대부분
+
+-- 사용자 정의 롤
+-- 필요에 의해 직접 권한을 포함시킨 롤
+
+-- 롤 생성
+-- CREATE ROLE 롤 이름
+
+-- 생성한 롤에 권한 부여
+-- GRANT [권한(필수)] TO [롤 이름(필수)];
+
+-- 사용자에게 롤 부여하기
+-- GRANT [롤 이름(필수)] TO [사용자 이름(필수)];
+
+-- 부여된 롤과 권한 확인
+-- ROLE_PRIVS 데이터 사전 이용
+-- 데이터 관리 권한을 가진 계정은 DBA_SYS_PRIVS, DBA_ROLW_PRIVS 사용
+
+-- 부여된 롤 취소
+-- REVOKE [롤 이름(필수)] FROM [사용자 이름(필수)];
+
+-- 롤 삭제
+-- DROP ROLE [롤 이름];
+
+-- 책 416P 실습문제
+-- SYSTEM 계정으로 접속하여 PREV_HW 계정을 생성
+-- 비밀번호는 ORCL. 접속 권한을 부여하고 PREV_HW 계정으로 접속
+CREATE USER PREV_HW IDENTIFIED BY ORCL;
+CONN PREV_HW/ORCL;
+
+-- SCOTT 계정으로 접속하여 RPEV_HW 계정에 SCOTT 소유의 EMP, DEPT, SALGRADE 테이블에 SELECT 권한을 부여
+CONN SCOTT/tiger;
+GRANT SELECT ON EMP TO PREV_HW;
+GRANT SELECT ON DEPT TO PREV_HW;
+GRANT SELECT ON SALGRADE TO PREV_HW;
+
+CONN PREV_HW/ORCL;
+SELECT * FROM SCOTT.EMP;
+SELECT * FROM SCOTT.DEPT;
+SELECT * FROM SCOTT.SALGRADE;
+
+-- SCOTT 계정으로 접소하여 PRED_HW 계정에 SALGRADE의 SELECT 권한을 취소
+CONN SCOTT/tiger;
+REVOKE SELECT ON SALGRADE FROM PREV_HW;
+
+CONN PREV_HW/ORCL;
+SELECT * FROM SCOTT.SALGRADE; -- 에러
