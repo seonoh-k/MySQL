@@ -1066,8 +1066,3 @@ select empno, ename, sal, (select grade from salgrade where sal between losal an
 -- 다중행 함수 사용
 select empno, ename, sal, (select grade from salgrade where sal between losal and hisal) as salgrade
     from emp where sal > any (select max(sal) from emp where job = 'SALESMAN') order by empno;
-
-SELECT INSTR('HELLO, ORACLE!', 'L') AS INSTR_1,
-				INSTR('HELLO, ORACLE!', 'L', 5) AS INSTR_2,
-				INSTR('HELLO, ORACLE!', 'L', 2, 2) AS INSTR_3
-			FROM DUAL;
