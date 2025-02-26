@@ -143,3 +143,45 @@ SELECT NAME FROM CUSTOMER WHERE NAME = ANY (SELECT NAME FROM CUSTOMER WHERE ADDR
                         
 SELECT NAME FROM CUSTOMER WHERE CUSTID IN (SELECT CUSTID FROM ORDERS) OR 
                                 NAME IN (SELECT NAME FROM CUSTOMER WHERE ADDRESS LIKE '대한민국%');
+                                
+---- 데이터 모델링 ----
+-- 요구사항 수집 및 분석
+-- 설계 - 개념적 모델링, 논리적 모델링, 물리적 모델링
+-- 구현
+-- 운영
+-- 감시 및 개선
+
+-- 개념적 모델링 : 개체를 추출, 개체의 관계를 정의하고 ER다이어그램을 작성
+
+-- 논리적 모델링 : 개념적 모델링에서 설계한 ERD를 사용하고자 하는 DBMS에 맞게 사상(맵핑)하여
+--                실제 데이터베이스로 구현하기 위한 모델을 만드는 과정
+--                1. 상세 속성 추출
+--                2. 정규화 수행 : 데이터를 중복 저장하는 문제 해결
+--                3. 데이터의 표준화 : 도메인 정의
+
+-- 물리적 모델링 : 논리적 모델링을 실제 컴퓨터 저장 장치에 저장하기 위한
+--              물리적인 구조를 정의하고 구현하는 과정
+
+-----------------------
+-- 관계 타입 유형
+
+-- 차수에 따른 유형 : 관계 집합에 참여하는 개체 타입의 수를 정의한 것
+-- 1진 관계 : 테이블 하나
+-- 2진 관계 : 테이블 두개
+-- 3진 관계 : 테이블 세개
+
+-- 관계 대응 수에 따른 유형
+-- 1 : 1
+-- 1: n
+-- n : 1
+-- n : m => 맵핑 테이블 작성을 통한 구조 변경 필요
+
+-- 관계 대응 수의 최소값과 최대값
+
+-- 모델링을 표현하는 방식
+-- 피터 첸 표기 방식
+-- IE 표기법
+
+create user bookerd identified by 1234;
+
+grant connect, resource to bookerd;
