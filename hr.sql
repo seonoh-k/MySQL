@@ -185,3 +185,7 @@ SELECT NAME FROM CUSTOMER WHERE CUSTID IN (SELECT CUSTID FROM ORDERS) OR
 create user bookerd identified by 1234;
 
 grant connect, resource to bookerd;
+
+create user boardmake identified by boardmake;
+
+grant connect, resource to boardmake;
