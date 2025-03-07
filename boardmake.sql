@@ -10,7 +10,7 @@ CREATE TABLE boards (
     delete_at DATE NULL,
     view_cnt NUMBER(15) NULL
 );
-
+select * from users;
 DROP TABLE IF EXISTS comments;
 
 CREATE TABLE comments (

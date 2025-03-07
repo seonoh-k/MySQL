@@ -189,3 +189,7 @@ grant connect, resource to bookerd;
 create user boardmake identified by boardmake;
 
 grant connect, resource to boardmake;
+
+create user boardDB identified by boardDB;
+
+grant connect, resource to boardDB;
