@@ -10,6 +10,9 @@ DELETE COMMENTS;
 DROP TABLE USERS;
 DROP TABLE BOARDS;
 DROP TABLE COMMENTS;
+
+commit;
+
 CREATE TABLE boards (
     board_no    number(5)           CONSTRAINT boards_board_no_pk PRIMARY KEY,
     user_no	    number(5)		    CONSTRAINT boards_user_no_nn NOT NULL,
@@ -94,10 +97,10 @@ INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,de
 VALUES(50001,90001,10001,'ㅋㅋㅋ',TO_DATE('2025-03-02 15:31:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,null);
 
 INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,delete_at,ref)
-VALUES(50002,90002,10001,'ㅋㅋㅋ',TO_DATE('2025-03-03 15:32:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,1);
+VALUES(50002,90002,10001,'ㅋㅋㅋ',TO_DATE('2025-03-03 15:32:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,90001);
 
 INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,delete_at,ref)
-VALUES(50003,90003,10001,'ㅋㅋㅋ',TO_DATE('2025-03-03 15:33:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,1);
+VALUES(50003,90003,10001,'ㅋㅋㅋ',TO_DATE('2025-03-03 15:33:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,90001);
 
 INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,delete_at,ref)
 VALUES(50004,90003,10003,'ㅋㅋㅋ',TO_DATE('2025-03-06 15:34:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,null);
@@ -106,5 +109,9 @@ INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,de
 VALUES(50005,90003,10003,'ㅋㅋㅋ',TO_DATE('2025-03-07 15:35:34', 'YYYY-MM-DD HH24:MI:SS'),null,null,null);
 
 INSERT INTO comments (comment_no,user_no,board_no,content,create_at,update_at,delete_at,ref)
-VALUES(50006,90003,10003,'ㅋㅋㅋㅋㅋ',TO_DATE('2025-03-07 15:36:34', 'YYYY-MM-DD HH24:MI:SS'),null,TO_DATE('2025-03-07 15:37:34', 'YYYY-MM-DD HH24:MI:SS'),5);
+VALUES(50006,90003,10003,'ㅋㅋㅋㅋㅋ',TO_DATE('2025-03-07 15:36:34', 'YYYY-MM-DD HH24:MI:SS'),null,TO_DATE('2025-03-07 15:37:34', 'YYYY-MM-DD HH24:MI:SS'),90005);
 ------------------------------------------------------------------- Comments 삽입 End
+
+create sequence user_seq start with 90006 increment by 1;
+create sequence board_seq start with 10006 increment by 1;
+create sequence comment_seq start with 50006 increment by 1;

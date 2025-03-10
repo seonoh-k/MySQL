@@ -193,3 +193,21 @@ grant connect, resource to boardmake;
 create user boardDB identified by boardDB;
 
 grant connect, resource to boardDB;
+
+CREATE TABLE MEMBER (
+    NAME VARCHAR2(10),
+    USERID VARCHAR2(10),
+    PWD VARCHAR2(10),
+    EMAIL VARCHAR2(20),
+    PHONE CHAR(13),
+    ADMIN NUMBER(1) DEFAULT 0,
+    PRIMARY KEY (USERID)
+);
+
+INSERT INTO MEMBER VALUES ('이소미', 'SOMI', '1234', 'GMD@NAVER.COM', '010-2362-5157', 0);
+INSERT INTO MEMBER VALUES ('하상오', 'SANG12', '1234', 'SANG12@NAVER.COM', '010-5629-8888', 1);
+INSERT INTO MEMBER VALUES ('김윤승', 'LIGHT', '1234', 'YOUN1004@NAVER.COM', '010-9999-8282', 0);
+
+SELECT * FROM MEMBER;
+
+COMMIT;
