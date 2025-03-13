@@ -231,3 +231,35 @@ insert into product values(product_seq.nextval, 'Visual C++ MFC 윈도우 프로
 insert into product values(product_seq.nextval, 'jQuery and jQuery Mobile : 이해하기 쉽게 풀어쓴', 25000, 'jquery.jpg', '소스 하나로 데스크탑과 모바일까지 HTML5와 함께 사용한다. 초보자들도 ...');
 commit;
 select * from product;
+
+create table board(
+    num number(5) primary key,
+    pass varchar2(30),
+    name varchar2(30),
+    email varchar2(30),
+    title varchar2(50),
+    content varchar2(1000),
+    readcount number(4) default 0,
+    writedate date default sysdate
+); 
+
+create sequence board_seq
+start with 1
+increment by 1;
+
+insert into board (num,pass,name,email,title,content)
+values(board_seq.nextval,'1234','성윤정','pinksung@nate.com','첫방문','반갑습니다');
+insert into board (num,pass,name,email,title,content)
+values(board_seq.nextval,'1234','성윤정','pinksung@nate.com','김밥','맛있어요.');
+insert into board (num,pass,name,email,title,content)
+values(board_seq.nextval,'3333','전수빈','raccon@nate.com','고등애','일식입니다.');
+insert into board (num,pass,name,email,title,content)
+values(board_seq.nextval,'1111','전원지','one@nate.com','갯골마을','돼지삼겹살이 맛있습니다.');
+
+select * from board order by num desc;
+commit;
+
+create user nonage identified by tiger;
+grant connect, resource to nonage;
+
+desc address;
