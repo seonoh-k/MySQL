@@ -263,3 +263,85 @@ create user nonage identified by tiger;
 grant connect, resource to nonage;
 
 desc address;
+
+create user book_ex identified by book_ex;
+grant connect, resource to book_ex;
+
+create table tbl_board (
+  bno number(10,0),
+  title varchar2(200) not null,
+  content varchar2(2000) not null,
+  writer varchar2(50) not null,
+  regdate date default sysdate, 
+  updatedate date default sysdate
+);
+
+alter table tbl_board add constraint pk_board 
+primary key (bno);
+
+create sequence seq_board;
+
+insert into tbl_board (bno,title,content,writer)
+values (seq_board.nextval,'테스트 제목','테스트 내용','user00');
+
+commit;
+
+select * from tbl_board;
+
+select /*+ index_desc(tbl_board pk_board) */ * from tbl_board where bno > 0;
+
+select /*+ index_desc(tbl_board pk_board) */ rownum rn, bno, title, content from tbl_board;
+
+select bno,title,content from 
+(select /*+ index_desc(tbl_board pk_board) */ rownum rn,bno,title,content from tbl_board where rownum <= 10) 
+where rn > 0;
+
+select count(*) from tbl_board where bno > 0;
+
+create table tbl_reply (
+  rno number(10,0), 
+  bno number(10,0) not null,
+  reply varchar2(1000) not null,
+  replyer varchar2(50) not null, 
+  replyDate date default sysdate, 
+  updateDate date default sysdate
+);
+
+create sequence seq_reply;
+
+alter table tbl_reply add constraint pk_reply primary key (rno);
+
+alter table tbl_reply  add constraint fk_reply_board  
+foreign key (bno)  references  tbl_board (bno); 
+
+select * from tbl_reply;
+delete tbl_reply;
+
+select rno, reply, replyer, replydate, updatedate from
+            (select /*+ index_desc(tbl_reply pk_reply) */ rownum rn, rno, reply, replyer, replydate, updatedate
+                from tbl_reply where bno = 120 and rownum <= 10)
+            where rn > 0;
+        
+select /*+ index_desc(tbl_reply pk_reply) */ rownum rn, rno, reply, regdate, updatedate
+                from tbl_board where bno = 120;
+
+create table tbl_sample1 (col1 varchar2(500));
+create table tbl_sample2 (col1 varchar2(50));
+
+select * from tbl_sample1;
+select * from tbl_sample2;
+delete tbl_sample1;
+
+commit;
+
+create table tbl_attach ( 
+  uuid varchar2(100) not null,
+  uploadPath varchar2(200) not null,
+  fileName varchar2(100) not null, 
+  filetype char(1) default 'I',
+  bno number(10,0)
+);
+
+alter table tbl_attach add constraint pk_attach primary key (uuid); 
+
+alter table tbl_attach add constraint fk_board_attach foreign key (bno) references tbl_board(bno);
